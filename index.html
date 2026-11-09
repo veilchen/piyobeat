@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex">
+  <title>ぴよビート</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <script type="module" src="/src/main.ts"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ぴよビート</h1>
+    <p class="sub" id="tagline">ぴよログの記録を、1日＝1小節の曲にします。</p>
+  </header>
+
+  <p class="error" id="error" role="alert" hidden></p>
+
+  <!-- 1. 入力 -->
+  <section id="screen-input" hidden>
+    <div class="panel stack">
+      <p class="assure">データはこの端末の中だけで処理され、どこにも送信されません。保存もされないので、タブを閉じると消えます。</p>
+      <label class="field" for="text">ぴよログのテキスト出力を貼り付け</label>
+      <textarea id="text" rows="8" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-gramm="false" data-1p-ignore placeholder="【ぴよログ】…"></textarea>
+      <div class="row">
+        <button id="read" class="primary" type="button">読み込む</button>
+        <label class="file">ファイルを選ぶ<input id="files" type="file" accept=".txt,text/plain" multiple></label>
+        <button id="sample" class="ghost" type="button">合成データで試す</button>
+      </div>
+      <p class="hint" id="drop-hint">.txt を複数まとめてドロップすることもできます。複数の月をつなげて貼っても読めます。</p>
+    </div>
+    <div class="notes">
+      <p>使うのは日付、時刻、授乳・排泄・睡眠・お風呂の記録だけです。お子さんの名前と月齢、メモ、日記、くすり、病院、体温、体重、自分で追加した記録項目は読んだそばから捨てます。</p>
+    </div>
+  </section>
+
+  <!-- 2. 確認 -->
+  <section id="screen-confirm" hidden>
+    <div class="panel stack">
+      <h2>読めた記録</h2>
+      <p id="summary-period"></p>
+      <ul class="counts" id="summary-counts"></ul>
+      <p class="hint" id="summary-unread" hidden></p>
+      <div class="row">
+        <div class="ctl"><label for="from">はじまり</label><select id="from"></select></div>
+        <div class="ctl"><label for="to">おわり</label><select id="to"></select></div>
+      </div>
+      <div class="row presets" id="presets"></div>
+      <div class="row">
+        <button id="to-play" class="primary" type="button">この範囲で演奏する</button>
+        <button id="back-input" class="ghost" type="button">入力をやり直す</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 演奏 -->
+  <section id="screen-play" class="stack" hidden>
+    <p class="banner" id="shared-banner" hidden>共有された曲です。音と時刻のパターンだけが入っていて、日付や名前は含まれません。<a id="make-own" href="./">自分の記録で作る</a></p>
+
+    <div class="transport">
+      <button id="play" class="primary" type="button">▶ 再生</button>
+      <div class="readout"><b id="now">--</b><br><span id="bpm"></span></div>
+      <div class="ctl grow"><label for="tempo">テンポ（1日あたり <span id="tempoV"></span> 秒）</label><input id="tempo" type="range" min="3" max="20" step="0.5" value="6"></div>
+      <div class="ctl"><label for="scale">音階</label>
+        <select id="scale">
+          <option value="penta">ペンタトニック</option>
+          <option value="ryukyu">琉球音階</option>
+          <option value="miyako">都節</option>
+          <option value="lydian">リディアン</option>
+        </select></div>
+      <label class="toggle" id="quant-wrap"><input id="quant" type="checkbox" checked>15分グリッドに揃える</label>
+    </div>
+
+    <div class="score">
+      <canvas id="cv" aria-label="記録を日×時刻で並べた譜面"></canvas>
+      <p class="hint">行をタップすると、その日から再生します。</p>
+    </div>
+
+    <div class="voices" id="voices"></div>
+
+    <!-- 4. 共有 -->
+    <div class="panel stack" id="share-panel">
+      <h2>音声ファイルにする</h2>
+      <p class="hint">WAVファイルには音だけが入ります。今のテンポ・音階・ミュートのまま書き出します。<span id="wav-size"></span></p>
+      <div class="row">
+        <button id="wav" class="primary" type="button">WAVを書き出す</button>
+        <a id="wav-save" class="button" download="piyobeat.wav" hidden>保存する</a>
+        <button id="wav-share" class="ghost" type="button" hidden>共有する</button>
+      </div>
+      <p class="hint" id="wav-status" role="status"></p>
+
+      <div id="link-panel" class="stack">
+        <h2>共有リンクを作る</h2>
+        <div class="columns">
+          <div>
+            <h3>リンクに含まれるもの</h3>
+            <ul class="plain">
+              <li>1日目から数えた日番号</li>
+              <li>15分単位の時刻</li>
+              <li>記録の種類（授乳・排泄・睡眠・お風呂）</li>
+              <li>段階にした量（授乳8段階、うんちの量とかたさ各4段階、睡眠の長さ）</li>
+              <li>テンポと音階</li>
+            </ul>
+          </div>
+          <div>
+            <h3>含まれないもの</h3>
+            <ul class="plain">
+              <li>日付・月・曜日</li>
+              <li>名前と月齢</li>
+              <li>メモ・日記・くすり・病院・体温・体重</li>
+              <li>正確な授乳の分数とml</li>
+              <li>追加した記録項目</li>
+            </ul>
+          </div>
+        </div>
+        <p class="caution"><strong>リンクから、いつ授乳・排泄・睡眠したかのパターンは読み取れます。</strong>完全な匿名化はできないので、見せてもよい相手にだけ送ってください。リンクを受け取った人は、さらに転送することもできます。</p>
+        <label class="toggle"><input id="jitter" type="checkbox">時刻を前後15分の範囲でランダムにずらす（ゆらぎ）</label>
+        <div class="row">
+          <button id="link" class="primary" type="button">内容を確認して、リンクを作る</button>
+          <button id="back-range" class="ghost" type="button">範囲を変える</button>
+        </div>
+        <div id="link-out" class="stack" hidden>
+          <input id="link-url" type="text" readonly aria-label="共有リンク">
+          <div class="row">
+            <button id="link-copy" type="button" class="ghost">コピー</button>
+            <button id="link-share" type="button" class="ghost" hidden>共有する</button>
+          </div>
+          <p class="hint" id="link-status" role="status"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <p>音の割り当て：授乳は母乳・ミルク・搾母乳のどれでも同じ音階のメロディになり、飲んだ量（母乳は授乳時間）が多いほど低い音です。母乳は左のみなら左、右のみなら右に定位。ミルクは量が多いほど音が長く伸びます。搾乳はポンプのリズム、おしっこはハイハットです。うんちは量で楽器が変わり、ちょこっと＝リムショット、少なめ＝タム、ふつう＝キック、多め＝キック＋クラッシュシンバル。かたさで響きが変わり、かためは短く高く、やわらかめは少し長く低く、下痢はざらついた音になります。寝ている間はパッドが鳴ります。音色のボタンをオンにすると試聴できます。3時間ごとの「時報」がテンポの拍で、ベースは記録と関係なく根音を弾きます。日が変わるたびにコードが I → vi → IV → V と進みます。</p>
+    </div>
+  </section>
+
+  <footer class="notes">
+    <p>ぴよログの公式サービスではありません。</p>
+  </footer>
+</div>
+</body>
+</html>

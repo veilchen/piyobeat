@@ -1,0 +1,13 @@
+# Real records must never be committed (HANDOFF §0)
+private/
+【ぴよログ】*.txt
+*.wav
+
+# Original handoff: its format example pairs a date with an age. docs/SPEC.md is the sanitised copy.
+piyobeat-handoff/
+
+node_modules/
+dist/
+coverage/
+*.local
+.DS_Store
