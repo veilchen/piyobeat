@@ -6,6 +6,7 @@ import type { VoiceKey } from './audio/voices';
 import { KINDS, parsePiyologText, type CalendarDate, type Kind, type ParseResult } from './parse/piyolog-text';
 import { applyJitter, toNotes, type Note } from './score/notes';
 import { canShareLinks, decodeSong, encodeSong, isSongFragment, SCALE_IDS, ShareLinkError, type ScaleId } from './share/codec';
+import { formatParsedEvents } from './ui/parsed-text';
 import { ScoreView } from './ui/score';
 
 const LONG_LINK_CHARS = 8000;
@@ -168,8 +169,20 @@ window.addEventListener('drop', (ev) => {
 });
 
 // ---------- 2. confirm ----------
+const parsedDetails = $<HTMLDetailsElement>('parsed-details');
+const parsedText = $('parsed-text');
+function closeParsedText(): void {
+  parsedDetails.open = false;
+  parsedText.textContent = '';
+}
+// Filled only when opened: a few months of records is thousands of lines.
+parsedDetails.addEventListener('toggle', () => {
+  parsedText.textContent = parsedDetails.open && parsed ? formatParsedEvents(parsed.events) : '';
+});
+
 function renderConfirm(): void {
   const p = parsed!;
+  closeParsedText();
   $('summary-period').textContent = `${fullDateAt(0)} 〜 ${fullDateAt(p.dayCount - 1)}（${p.dayCount}日間、${p.events.length}件）`;
   const counts = $('summary-counts');
   counts.replaceChildren(
@@ -236,6 +249,7 @@ $('to-play').addEventListener('click', () => {
 });
 $('back-input').addEventListener('click', () => {
   parsed = null;
+  closeParsedText();
   show('input');
 });
 $('back-range').addEventListener('click', () => {

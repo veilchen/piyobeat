@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parsePiyologText } from '../src/parse/piyolog-text';
 import { toNotes } from '../src/score/notes';
+import { formatParsedEvents } from '../src/ui/parsed-text';
 import { decodeSong, encodeSong, packSong } from '../src/share/codec';
 
 const FIXTURE = readFileSync(new URL('./fixtures/synthetic_export_2026-01.txt', import.meta.url), 'utf8');
@@ -46,6 +47,13 @@ describe('free text does not survive', () => {
   it('decoded share link contains none of it', async () => {
     const json = JSON.stringify(await decodeSong(await encodeSong(song(FIXTURE))));
     expect(forbidden.filter((s) => json.includes(s))).toEqual([]);
+  });
+
+  it('debug view contains none of it, and no calendar date', () => {
+    const text = formatParsedEvents(parsePiyologText(FIXTURE).events);
+    expect(forbidden.filter((s) => text.includes(s))).toEqual([]);
+    expect(text).not.toMatch(/2026|1\/1\d/);
+    expect(text.split('\n')).toHaveLength(parsePiyologText(FIXTURE).events.length);
   });
 
   it('events hold numbers and enums only', () => {

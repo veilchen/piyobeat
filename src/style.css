@@ -93,6 +93,10 @@ canvas { display: block; width: 100%; cursor: pointer; touch-action: manipulatio
 
 .counts { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 4px 12px; font-size: 14px; }
 .counts span { font-family: var(--mono); color: var(--muted); float: right; }
+details { display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
+summary { cursor: pointer; color: var(--muted); min-height: 24px; }
+details .hint { margin: 6px 0; }
+pre { margin: 0; max-height: 320px; overflow: auto; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; font: 12px/1.6 var(--mono); }
 .plain { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
 .columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .caution { background: var(--caution-bg); color: var(--caution-fg); border-radius: 10px; padding: 10px 12px; font-size: 13px; line-height: 1.7; }

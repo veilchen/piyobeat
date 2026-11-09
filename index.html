@@ -52,6 +52,11 @@
       <p id="summary-period"></p>
       <ul class="counts" id="summary-counts"></ul>
       <p class="hint" id="summary-unread" hidden></p>
+      <details id="parsed-details">
+        <summary>読み取った内容を見る（デバッグ用）</summary>
+        <p class="hint">読み取り後に残っている情報のすべてです。名前・メモ・日記は含まれません。日付は1日目からの番号で表示します。</p>
+        <pre id="parsed-text" tabindex="0"></pre>
+      </details>
       <div class="row">
         <div class="ctl"><label for="from">はじまり</label><select id="from"></select></div>
         <div class="ctl"><label for="to">おわり</label><select id="to"></select></div>
