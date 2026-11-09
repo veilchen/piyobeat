@@ -37,3 +37,7 @@ CSPは本番ビルドにだけ入ります。CSPや通信に関わる確認は `
 ## 公開
 
 `.github/workflows/deploy.yml` が `main` へのpushでテストとビルドを実行し、GitHub Pagesへ配信します。ビルドは相対パスなので、他の静的ホストでもそのまま動きます。
+
+## ライセンス
+
+著作権は作者が保持しており、コードの再利用や、改変版・コピーの公開は許可していません（[LICENSE](LICENSE)）。プルリクエストは歓迎します（[CONTRIBUTING.md](CONTRIBUTING.md)）。

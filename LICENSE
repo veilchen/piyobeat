@@ -1,0 +1,23 @@
+Copyright (c) 2026 Sumire. All rights reserved.
+
+このリポジトリのコード、文書、その他の内容の著作権は、著作者が保持します（プルリクエストで寄せられたコードの扱いは CONTRIBUTING.md のとおりです）。
+
+次のことは許可します。
+
+- GitHub上でこのリポジトリを閲覧すること
+- このリポジトリへのプルリクエストを作るために、フォークして手元で変更し、動かすこと
+- https://veilchen.github.io/piyobeat/ で公開しているサービスを使うこと
+
+上記のほか、著作者の許可なく、全部または一部を複製、改変、再配布、公開、再利用することはできません。改変版やコピーをWebサイトとして公開することも含みます。
+
+本ソフトウェアは現状のまま提供され、いかなる保証もありません。著作者は、本ソフトウェアの利用によって生じた損害について責任を負いません。
+
+---
+
+The copyright in this repository's code, documents and other content is retained by the author (code contributed by pull request is covered by CONTRIBUTING.md).
+
+You may view this repository on GitHub, fork it and modify and run it locally in order to prepare a pull request to this repository, and use the service published at https://veilchen.github.io/piyobeat/.
+
+Otherwise, you may not copy, modify, redistribute, publish or reuse any part of it without the author's permission. This includes publishing a modified version or a copy as a website.
+
+This software is provided "as is", without warranty of any kind. The author is not liable for any damages arising from its use.
