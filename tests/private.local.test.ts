@@ -19,13 +19,22 @@ interface Totals {
   right: number;
 }
 
-function readSummaries(text: string): Totals[] {
-  const out: Totals[] = [];
+/** Summary lines per calendar day number. A day exported more than once has one entry per copy. */
+function readSummaries(text: string): Map<number, Totals[]> {
+  const out = new Map<number, Totals[]>();
   let current: Totals | null = null;
+  let afterSeparator = false;
   for (const line of text.split(/\r?\n/)) {
-    if (/^\d{4}\/\d+\/\d+\(.\)$/.test(line)) {
+    if (/^-{5,}\s*$/.test(line)) {
+      afterSeparator = true;
+      continue;
+    }
+    const date = afterSeparator ? /^(\d{4})\/(\d+)\/(\d+)\(.\)$/.exec(line.trimEnd()) : null;
+    if (line.trim()) afterSeparator = false;
+    if (date) {
       current = { pee: 0, poop: 0, formula: 0, formulaMl: 0, left: 0, right: 0 };
-      out.push(current);
+      const n = Date.UTC(+date[1]!, +date[2]! - 1, +date[3]!) / 864e5;
+      out.set(n, [...(out.get(n) ?? []), current]);
     }
     if (!current) continue;
     let m;
@@ -48,6 +57,8 @@ describe.skipIf(files.length === 0)('real exports (private/)', () => {
   const all = texts.join('\n');
   const parsed = parsePiyologText(all);
   const summaries = readSummaries(all);
+  const start = parsed.startDate;
+  const firstDay = start ? Date.UTC(start.y, start.m - 1, start.d) / 864e5 : 0;
 
   const tallied = (d: number): Totals => {
     const t: Totals = { pee: 0, poop: 0, formula: 0, formulaMl: 0, left: 0, right: 0 };
@@ -71,15 +82,28 @@ describe.skipIf(files.length === 0)('real exports (private/)', () => {
     expect(parsed.unreadable).toBe(0);
   });
 
-  it('has one summary per day', () => {
-    expect(summaries.length).toBe(parsed.dayCount);
+  it('has a summary for every day', () => {
+    expect(summaries.size).toBe(parsed.dayCount);
   });
 
-  it.each(['pee', 'poop', 'formula', 'formulaMl', 'left', 'right'] as const)('%s matches on every day', (field) => {
+  // The kept copy of a day is the fullest one, so a day passes if it matches any copy's summary.
+  // The app rounds breast minutes per record and again for the day, so totals may differ by up to one minute per record.
+  it.each(['left', 'right'] as const)('%s is within rounding on every day', (field) => {
     let mismatchedDays = 0;
-    summaries.forEach((s, d) => {
-      if (tallied(d)[field] !== s[field]) mismatchedDays++;
-    });
+    for (const [n, copies] of summaries) {
+      const records = parsed.events.filter((e) => e.day === n - firstDay && e.kind === 'breast').length;
+      const value = tallied(n - firstDay)[field];
+      if (!copies.some((c) => Math.abs(c[field] - value) <= records)) mismatchedDays++;
+    }
+    expect(mismatchedDays).toBe(0);
+  });
+
+  it.each(['pee', 'poop', 'formula', 'formulaMl'] as const)('%s matches on every day', (field) => {
+    let mismatchedDays = 0;
+    for (const [n, copies] of summaries) {
+      const value = tallied(n - firstDay)[field];
+      if (!copies.some((c) => c[field] === value)) mismatchedDays++;
+    }
     expect(mismatchedDays).toBe(0);
   });
 });

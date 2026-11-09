@@ -80,6 +80,12 @@ describe('allowlist', () => {
     expect(r.dayCount).toBe(1);
   });
 
+  it('keeps reading after a memo that contains blank lines, and drops the memo', () => {
+    const r = parsePiyologText(day(['10:00   おしっこ   改行のある', '', 'メモ', '', '11:00   ミルク 80ml   ']));
+    expect(r.events.map((e) => e.kind)).toEqual(['pee', 'formula']);
+    expect(JSON.stringify(r)).not.toContain('メモ');
+  });
+
   it('never throws on arbitrary input', () => {
     for (const s of ['', '\n\n', 'hello', '----------', '----------\n2026/13/99(木)\n10:00   おしっこ', '25:00   おしっこ']) {
       expect(parsePiyologText(s).events).toEqual([]);
@@ -104,6 +110,19 @@ describe('multiple months', () => {
 
   it('keeps one copy of a day pasted twice', () => {
     expect(parsePiyologText(a + '\n' + a)).toEqual(parsePiyologText(a));
+  });
+
+  it('keeps the fuller copy of a day exported partway through, in either order', () => {
+    const partial = day(['10:00   おしっこ   '], '2026/1/31(土)');
+    const full = day(['10:00   おしっこ   ', '20:00   おしっこ   '], '2026/1/31(土)');
+    expect(parsePiyologText(partial + '\n' + full)).toEqual(parsePiyologText(full));
+    expect(parsePiyologText(full + '\n' + partial)).toEqual(parsePiyologText(full));
+  });
+
+  it('counts unreadable records only in the copy it keeps', () => {
+    const bad = day(['10:00   ミルク たくさん   '], '2026/1/31(土)');
+    const full = day(['10:00   おしっこ   ', '20:00   おしっこ   '], '2026/1/31(土)');
+    expect(parsePiyologText(bad + '\n' + full).unreadable).toBe(0);
   });
 
   it('handles CRLF and a BOM', () => {

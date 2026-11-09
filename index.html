@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="referrer" content="no-referrer">
-  <meta name="robots" content="noindex">
+  <meta name="description" content="ぴよログのテキスト出力を貼り付けると、育児記録が曲になります。処理はブラウザの中だけで完結します。">
   <title>ぴよビート</title>
+  <link rel="canonical" href="https://veilchen.github.io/piyobeat/">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <script type="module" src="/src/main.ts"></script>
 </head>
@@ -22,6 +23,14 @@
   <section id="screen-input" hidden>
     <div class="panel stack">
       <p class="assure">データはこの端末の中だけで処理され、どこにも送信されません。保存もされないので、タブを閉じると消えます。</p>
+      <p class="hint">正規のURLは <strong>veilchen.github.io/piyobeat</strong> です。ほかのURLのページには記録を貼らないでください。</p>
+      <h2>記録の取り出しかた（iPhone）</h2>
+      <ol class="plain">
+        <li>ぴよログのメニューから「記録の出力」→「テキストでのエクスポート」を開く</li>
+        <li>「1日分のエクスポート（テキスト）」か「1ヶ月分のエクスポート（テキスト）」の「エクスポート」を押す</li>
+        <li>共有ダイアログの「コピー」を押して、下の欄に貼り付ける</li>
+      </ol>
+      <p class="hint">何か月分でも、続けて貼れば一緒に読めます。Androidでの手順はまだ分かっていません。ご存じの方は<a href="https://forms.gle/BSfw1VsoPkNmesqC8" target="_blank" rel="noopener noreferrer">ご意見フォーム</a>から教えてください。</p>
       <label class="field" for="text">ぴよログのテキスト出力を貼り付け</label>
       <textarea id="text" rows="8" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" data-gramm="false" data-1p-ignore placeholder="【ぴよログ】…"></textarea>
       <div class="row">
@@ -29,7 +38,7 @@
         <label class="file">ファイルを選ぶ<input id="files" type="file" accept=".txt,text/plain" multiple></label>
         <button id="sample" class="ghost" type="button">合成データで試す</button>
       </div>
-      <p class="hint" id="drop-hint">.txt を複数まとめてドロップすることもできます。複数の月をつなげて貼っても読めます。</p>
+      <p class="hint" id="drop-hint">パソコンでは .txt を複数まとめてドロップすることもできます。</p>
     </div>
     <div class="notes">
       <p>使うのは日付、時刻、授乳・排泄・睡眠・お風呂の記録だけです。お子さんの名前と月齢、メモ、日記、くすり、病院、体温、体重、自分で追加した記録項目は読んだそばから捨てます。</p>
@@ -138,7 +147,8 @@
   </section>
 
   <footer class="notes">
-    <p>ぴよログの公式サービスではありません。</p>
+    <p>ぴよログの公式サービスではなく、個人が作った非公式のツールです。</p>
+    <p><a href="https://forms.gle/BSfw1VsoPkNmesqC8" target="_blank" rel="noopener noreferrer">ご意見フォーム</a>（Googleフォームが開きます。記録の本文、お子さんの名前、生年月日は書かないでください）</p>
   </footer>
 </div>
 </body>

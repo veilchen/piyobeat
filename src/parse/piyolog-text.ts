@@ -144,16 +144,18 @@ interface DayBlock {
   number: number;
   date: CalendarDate;
   items: { minute: number; body: Body | SleepBody }[];
+  unreadable: number;
 }
 
-/** One or more monthly exports, pasted together or in any order. A day seen twice keeps its first copy. */
+/**
+ * One or more exports, pasted together or in any order. A day seen twice keeps the copy with the most
+ * records, because an export made partway through a day or month stops short of a later one.
+ */
 export function parsePiyologText(text: string): ParseResult {
-  const days = new Map<number, DayBlock>();
-  let unreadable = 0;
+  const blocks: DayBlock[] = [];
   let current: DayBlock | null = null;
   let afterSeparator = true; // a date line only counts right after a separator (or at the start of a file)
   let inRecords = false;
-  let seenRecord = false;
 
   for (const rawLine of text.replace(/^﻿/, '').split(/\r?\n/)) {
     const line = rawLine.trimEnd();
@@ -170,18 +172,18 @@ export function parsePiyologText(text: string): ParseResult {
       if (dm) {
         const [y, m, d] = [Number(dm[1]), Number(dm[2]), Number(dm[3])];
         const n = dayNumber(y, m, d);
-        if (n !== null && !days.has(n)) {
-          current = { number: n, date: { y, m, d }, items: [] };
-          days.set(n, current);
+        if (n !== null) {
+          current = { number: n, date: { y, m, d }, items: [], unreadable: 0 };
+          blocks.push(current);
           inRecords = true;
-          seenRecord = false;
         }
       }
       continue;
     }
     if (!inRecords || !current) continue;
     // Everything from the summary lines on is discarded, so a diary line shaped like a record cannot count.
-    if (SUMMARY_LINE.test(line) || (line === '' && seenRecord)) {
+    // A blank line does not end the records: a memo can contain line breaks.
+    if (SUMMARY_LINE.test(line)) {
       inRecords = false;
       continue;
     }
@@ -190,20 +192,27 @@ export function parsePiyologText(text: string): ParseResult {
     const hh = Number(rec[1]);
     const mm = Number(rec[2]);
     if (hh > 23 || mm > 59) continue;
-    seenRecord = true;
     // parts[1..] is the memo: dropped here and never read.
     const body = rec[3]!.split('   ')[0]!.trimEnd();
     const reader = READERS.get(body.split(' ')[0]!);
     if (!reader) continue; // custom and discarded items: not even counted
     const parsed = reader(body);
-    if (parsed === null) unreadable++;
+    if (parsed === null) current.unreadable++;
     else current.items.push({ minute: hh * 60 + mm, body: parsed });
   }
 
-  return assemble([...days.values()], unreadable);
+  const best = new Map<number, DayBlock>();
+  for (const block of blocks) {
+    const kept = best.get(block.number);
+    if (!kept || recordCount(block) > recordCount(kept)) best.set(block.number, block);
+  }
+  return assemble([...best.values()]);
 }
 
-function assemble(blocks: DayBlock[], unreadable: number): ParseResult {
+const recordCount = (block: DayBlock) => block.items.length + block.unreadable;
+
+function assemble(blocks: DayBlock[]): ParseResult {
+  const unreadable = blocks.reduce((sum, b) => sum + b.unreadable, 0);
   if (blocks.length === 0) return { events: [], startDate: null, dayCount: 0, unreadable };
   blocks.sort((a, b) => a.number - b.number);
   const first = blocks[0]!;

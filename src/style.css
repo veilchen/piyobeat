@@ -100,3 +100,5 @@ canvas { display: block; width: 100%; cursor: pointer; touch-action: manipulatio
 .banner a { color: var(--accent); margin-left: 6px; }
 .error { background: var(--caution-bg); color: var(--caution-fg); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
 .notes { font-size: 12.5px; color: var(--muted); line-height: 1.7; }
+.notes p + p { margin-top: 6px; }
+.notes a, .hint a { color: var(--accent); }

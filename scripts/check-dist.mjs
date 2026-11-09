@@ -13,7 +13,8 @@ const FORBIDDEN = [
   /indexedDB/,
   /sessionStorage/,
   /document\.cookie/,
-  /https?:\/\/(?!www\.w3\.org\/)/,
+  // The only addresses allowed: the SVG namespace, this site, and the feedback form (a plain link).
+  /https?:\/\/(?!www\.w3\.org\/|veilchen\.github\.io\/piyobeat\/|forms\.gle\/BSfw1VsoPkNmesqC8")/,
 ];
 
 function walk(dir) {
