@@ -44,10 +44,8 @@ describe('buildSleepIntervals (SPEC §2-3)', () => {
 
   it('起きる ( ! ) closes an open 寝る so the next night survives', () => {
     const marks = [sleep(hm(9)), bangWake(hm(10, 30)), sleep(hm(20)), sleep(hm(0, 20, 1)), wake(hm(3, 10, 1), 170)];
-    const night = { start: hm(20), len: 430 };
-    expect(buildSleepIntervals(marks)).toEqual(
-      WAKE_BANG_EMITS_INTERVAL ? [{ start: hm(9), len: 90 }, night] : [night],
-    );
+    expect(WAKE_BANG_EMITS_INTERVAL).toBe(false);
+    expect(buildSleepIntervals(marks)).toEqual([{ start: hm(20), len: 430 }]);
   });
 
   it('discards a 寝る that never closes and a zero-length pair', () => {

@@ -17,10 +17,10 @@ const MAX_SLEEP_MINUTES = 14 * 60;
 
 /**
  * Whether 起きる ( ! ) that follows an open 寝る yields an interval.
- * true: the pair becomes an interval, as in the prototype. false: it only closes the open 寝る.
- * Either way it must close it: otherwise rule 2 chains on into the next night and rule 4 drops it.
+ * false follows SPEC §2-2 (区間は作らない): Piyolog itself could not pair these records.
+ * Either way it must close the 寝る: otherwise rule 2 chains on into the next night and rule 4 drops it.
  */
-export const WAKE_BANG_EMITS_INTERVAL = true;
+export const WAKE_BANG_EMITS_INTERVAL = false;
 
 /** Rules from SPEC §2-3. Marks must be in time order; marks at the same minute keep file order. */
 export function buildSleepIntervals(marks: readonly SleepMark[]): SleepInterval[] {

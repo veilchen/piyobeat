@@ -82,8 +82,9 @@
 
     <!-- 4. 共有 -->
     <div class="panel stack" id="share-panel">
+      <p class="caution"><strong>音声ファイルからもリンクからも、いつ授乳・排泄・睡眠したかのパターンは読み取れます。</strong>完全な匿名化はできないので、見せてもよい相手にだけ送ってください。受け取った人は、さらに転送することもできます。</p>
       <h2>音声ファイルにする</h2>
-      <p class="hint">WAVファイルには音だけが入ります。今のテンポ・音階・ミュートのまま書き出します。<span id="wav-size"></span></p>
+      <p class="hint">WAVファイルに名前や日付などの文字情報は入りません。今のテンポ・音階・ミュートのまま書き出します。<span id="wav-size"></span></p>
       <div class="row">
         <button id="wav" class="primary" type="button">WAVを書き出す</button>
         <a id="wav-save" class="button" download="piyobeat.wav" hidden>保存する</a>
@@ -115,7 +116,6 @@
             </ul>
           </div>
         </div>
-        <p class="caution"><strong>リンクから、いつ授乳・排泄・睡眠したかのパターンは読み取れます。</strong>完全な匿名化はできないので、見せてもよい相手にだけ送ってください。リンクを受け取った人は、さらに転送することもできます。</p>
         <label class="toggle"><input id="jitter" type="checkbox">時刻を前後15分の範囲でランダムにずらす（ゆらぎ）</label>
         <div class="row">
           <button id="link" class="primary" type="button">内容を確認して、リンクを作る</button>
