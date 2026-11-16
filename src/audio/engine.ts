@@ -12,7 +12,8 @@ export interface SeqItem {
   at: number;
   key: VoiceKey;
   note?: Note;
-  down?: boolean;
+  /** Ticks: 2 at midnight, 1 at noon (the two bar lines of a day), 0 otherwise. */
+  accent?: 0 | 1 | 2;
   /** AudioContext time this item last sounded, for the score's flash. */
   when?: number;
 }
@@ -20,7 +21,7 @@ export interface SeqItem {
 export function buildSeq(notes: readonly Note[], dayCount: number): SeqItem[] {
   const seq: SeqItem[] = notes.map((note) => ({ at: note.day * DAY + note.minute, key: note.kind, note }));
   for (let at = 0; at < dayCount * DAY; at += TICK_MINUTES) {
-    seq.push({ at, key: 'tick', down: at % DAY === 0 });
+    seq.push({ at, key: 'tick', accent: at % DAY === 0 ? 2 : at % DAY === DAY / 2 ? 1 : 0 });
   }
   const rank = (s: SeqItem) => (s.key === 'tick' ? 0 : 1);
   return seq
@@ -32,7 +33,7 @@ export function buildSeq(notes: readonly Note[], dayCount: number): SeqItem[] {
 /** Plays one item through the given voices, honouring mutes. Shared by live playback and WAV export. */
 export function playItem(v: Voices, item: SeqItem, t: number, rate: number, on: Readonly<Record<VoiceKey, boolean>>): void {
   if (item.key === 'tick') {
-    if (on.tick) v.block(t, !!item.down);
+    if (on.tick) v.block(t, item.accent ?? 0);
     if (on.bass) v.autoBass(item.at, t);
   } else if (item.note && on[item.key]) {
     v.note(item.note, t, rate);

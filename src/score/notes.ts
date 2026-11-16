@@ -1,4 +1,4 @@
-import type { Event, Kind } from '../parse/piyolog-text';
+import { KINDS, type Event, type Kind } from '../parse/piyolog-text';
 
 export const SLOT_MINUTES = 15;
 export const SLOTS_PER_DAY = 96;
@@ -90,10 +90,16 @@ export function toNotes(events: readonly Event[], opts: NoteOptions): Note[] {
   return sortNotes(notes);
 }
 
+const sortKey = (n: Note) => [n.day, n.minute, KINDS.indexOf(n.kind), n.level, n.side, n.amount ?? -1, n.hardness ?? -1, n.len ?? -1];
+
+/** One fixed order for any set of notes, so a song decoded from a link equals the one it was made from. */
 export function sortNotes(notes: Note[]): Note[] {
   return notes
-    .map((n, i) => ({ n, i }))
-    .sort((a, b) => a.n.day - b.n.day || a.n.minute - b.n.minute || a.i - b.i)
+    .map((n) => ({ n, k: sortKey(n) }))
+    .sort((a, b) => {
+      for (let i = 0; i < a.k.length; i++) if (a.k[i] !== b.k[i]) return a.k[i]! - b.k[i]!;
+      return 0;
+    })
     .map(({ n }) => n);
 }
 

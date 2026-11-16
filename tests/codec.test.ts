@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parsePiyologText, type Event, type Kind } from '../src/parse/piyolog-text';
-import { applyJitter, toNotes, type Note } from '../src/score/notes';
-import { decodeSong, encodeSong, packSong, ShareLinkError, unpackSong, type Song } from '../src/share/codec';
+import { applyJitter, sortNotes, toNotes, type Note } from '../src/score/notes';
+import { decodeSong, encodeSong, packSong, packSongV2, ShareLinkError, unpackSong, unpackSongV2, type Song } from '../src/share/codec';
+import v1Link from './fixtures/v1-link.json';
 
 const FIXTURE = readFileSync(new URL('./fixtures/synthetic_export_2026-01.txt', import.meta.url), 'utf8');
 
@@ -29,7 +30,26 @@ describe('share link', () => {
     notes.push({ day: 255, minute: 1425, kind: 'poop', level: 0, side: 0, amount: 3 });
     notes.push({ day: 255, minute: 1425, kind: 'poop', level: 0, side: 0, hardness: 3 });
     const song: Song = { dayCount: 256, tempo: 20, scale: 'lydian', notes };
-    expect(unpackSong(packSong(song))).toEqual(song);
+    const sorted = { ...song, notes: sortNotes(notes) };
+    expect(unpackSong(packSong(song))).toEqual(sorted);
+    expect(unpackSongV2(packSongV2(song))).toEqual(sorted);
+  });
+
+  it('makes v2 links', async () => {
+    expect(await encodeSong(songOf(FIXTURE))).toMatch(/^v2\./);
+  });
+
+  it('still opens a link made in v1, as the same song', async () => {
+    expect(v1Link.fragment).toMatch(/^v1\./);
+    // Same notes; only the order of notes sharing a quarter hour has been made canonical since.
+    const expected = { ...v1Link.song, notes: sortNotes(v1Link.song.notes as Note[]) };
+    expect(await decodeSong(v1Link.fragment)).toEqual(expected);
+    expect(await decodeSong(await encodeSong(v1Link.song as Song))).toEqual(expected);
+  });
+
+  it('v2 is much shorter than v1 for the same song', async () => {
+    const v2 = await encodeSong(v1Link.song as Song);
+    expect(v2.length).toBeLessThan(v1Link.fragment.length * 0.6);
   });
 
   it('keeps tempo and scale', async () => {
@@ -57,7 +77,7 @@ describe('share link', () => {
       }
     }
     const link = await encodeSong({ dayCount: 28, tempo: 6, scale: 'penta', notes: toNotes(events, { startDay: 0, endDay: 27, snap: true }) });
-    expect(link.length).toBeLessThan(5000);
+    expect(link.length).toBeLessThan(3000);
   });
 
   it('refuses too many days', () => {
@@ -83,7 +103,25 @@ describe('hostile links', () => {
     expect(() => pack(bytes)).toThrow(ShareLinkError);
   });
 
-  it.each(['v1.', 'v1.!!!!', 'v1.AAAA', 'v2.AAAA', 'nope'])('rejects fragment %s', async (fragment) => {
+  it.each<[string, number[]]>([
+    ['v2 empty body', [0, 12, 0]],
+    ['v2 truncated counts', [0, 12, 0, 0, 0, 0]],
+    ['v2 slot beyond the range', [0, 12, 0, 0, 0, 0, 0, 1, 96, 0, 0, 0]],
+    ['v2 endless varint', [0, 12, 0, 255, 255, 255, 255]],
+    ['v2 trailing bytes', [0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9]],
+    ['v2 missing value', [0, 12, 0, 1, 0]],
+    ['v2 feed level out of range', [0, 12, 0, 0, 1, 0, 8, 0, 0, 0, 0, 0, 0]],
+    ['v2 bad breast side', [0, 12, 0, 1, 0, 24, 0, 0, 0, 0, 0, 0, 0]],
+    ['v2 bad poop value', [0, 12, 0, 0, 0, 0, 0, 0, 1, 0, 64, 0, 0]],
+  ])('rejects %s', (_name, bytes) => {
+    expect(() => unpackSongV2(Uint8Array.from(bytes))).toThrow(ShareLinkError);
+  });
+
+  it('accepts a minimal valid v2 body', () => {
+    expect(unpackSongV2(Uint8Array.from([0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0])).notes).toEqual([]);
+  });
+
+  it.each(['v1.', 'v1.!!!!', 'v1.AAAA', 'v2.', 'v2.AAAA', 'v3.AAAA', 'nope'])('rejects fragment %s', async (fragment) => {
     await expect(decodeSong(fragment)).rejects.toBeInstanceOf(ShareLinkError);
   });
 

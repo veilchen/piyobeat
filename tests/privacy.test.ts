@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { parsePiyologText } from '../src/parse/piyolog-text';
 import { toNotes } from '../src/score/notes';
 import { formatParsedEvents } from '../src/ui/parsed-text';
-import { decodeSong, encodeSong, packSong } from '../src/share/codec';
+import { decodeSong, encodeSong, packSong, packSongV2 } from '../src/share/codec';
 
 const FIXTURE = readFileSync(new URL('./fixtures/synthetic_export_2026-01.txt', import.meta.url), 'utf8');
 const ALLOWED_HEADS = new Set(['母乳', 'ミルク', '搾母乳', '搾乳', 'おしっこ', 'うんち', 'お風呂', '寝る', '起きる']);
@@ -90,8 +90,8 @@ describe('share link hides the calendar', () => {
   });
 
   it('decoded notes carry no raw minutes or ml', () => {
-    const packed = packSong(song(FIXTURE));
-    expect(packed.length).toBeLessThan(4 + song(FIXTURE).notes.length * 4);
+    expect(packSong(song(FIXTURE)).length).toBeLessThan(4 + song(FIXTURE).notes.length * 4);
+    expect(packSongV2(song(FIXTURE)).length).toBeLessThan(4 + song(FIXTURE).notes.length * 3);
     for (const n of song(FIXTURE).notes) {
       expect(n).not.toHaveProperty('ml');
       expect(n).not.toHaveProperty('left');

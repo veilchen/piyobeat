@@ -83,6 +83,8 @@ export class ScoreView {
     c.lineWidth = 1;
     for (let h = 0; h <= 24; h += 3) {
       const X = Math.round(x(h * 60)) + 0.5;
+      // 0, 12 and 24 are bar lines: a day is two 4/4 bars of 3-hour beats.
+      c.lineWidth = h % 12 === 0 ? 2 : 1;
       c.beginPath();
       c.moveTo(X, TOP - 2);
       c.lineTo(X, H - 4);

@@ -307,7 +307,7 @@ $<HTMLCanvasElement>('cv').addEventListener('click', (ev) => {
 
 function setTempo(seconds: number): void {
   $('tempoV').textContent = String(seconds);
-  $('bpm').textContent = `BPM ${Math.round((8 * 60) / seconds)}（3時間＝1拍）`;
+  $('bpm').textContent = `BPM ${Math.round((8 * 60) / seconds)}（4/4拍子、3時間＝1拍）`;
   engine.setSecondsPerDay(seconds);
 }
 tempoEl.addEventListener('input', () => {

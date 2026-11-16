@@ -211,10 +211,14 @@ export function parsePiyologText(text: string): ParseResult {
 
 const recordCount = (block: DayBlock) => block.items.length + block.unreadable;
 
-function assemble(blocks: DayBlock[]): ParseResult {
-  const unreadable = blocks.reduce((sum, b) => sum + b.unreadable, 0);
+function assemble(all: DayBlock[]): ParseResult {
+  const unreadable = all.reduce((sum, b) => sum + b.unreadable, 0);
+  all.sort((a, b) => a.number - b.number);
+  // A month exported partway through lists the rest of the month as empty days; so can the days before the first record.
+  const firstRecorded = all.findIndex((b) => recordCount(b) > 0);
+  const lastRecorded = all.findLastIndex((b) => recordCount(b) > 0);
+  const blocks = firstRecorded < 0 ? [] : all.slice(firstRecorded, lastRecorded + 1);
   if (blocks.length === 0) return { events: [], startDate: null, dayCount: 0, unreadable };
-  blocks.sort((a, b) => a.number - b.number);
   const first = blocks[0]!;
   const events: Event[] = [];
   const marks: SleepMark[] = [];

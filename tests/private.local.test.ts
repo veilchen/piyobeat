@@ -82,8 +82,16 @@ describe.skipIf(files.length === 0)('real exports (private/)', () => {
     expect(parsed.unreadable).toBe(0);
   });
 
-  it('has a summary for every day', () => {
-    expect(summaries.size).toBe(parsed.dayCount);
+  it('has a summary for every day, and days trimmed at either end had no records', () => {
+    let missing = 0;
+    for (let d = 0; d < parsed.dayCount; d++) if (!summaries.has(firstDay + d)) missing++;
+    expect(missing).toBe(0);
+    let trimmedWithRecords = 0;
+    for (const [n, copies] of summaries) {
+      const inRange = n >= firstDay && n < firstDay + parsed.dayCount;
+      if (!inRange && copies.some((c) => c.pee || c.poop || c.formula || c.left || c.right)) trimmedWithRecords++;
+    }
+    expect(trimmedWithRecords).toBe(0);
   });
 
   // The kept copy of a day is the fullest one, so a day passes if it matches any copy's summary.

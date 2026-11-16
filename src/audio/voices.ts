@@ -223,11 +223,12 @@ export class Voices {
     }
   }
 
-  block(t: number, down: boolean): void {
-    const o = this.osc('triangle', down ? 1180 : 880);
+  /** Woodblock. accent 2 = start of the day, 1 = noon, 0 = other 3-hour beats. */
+  block(t: number, accent: 0 | 1 | 2): void {
+    const o = this.osc('triangle', [880, 1020, 1180][accent]!);
     const g = this.ctx.createGain();
     o.connect(g).connect(this.dest);
-    this.env(g, t, down ? 0.12 : 0.06, 0.001, 0.04);
+    this.env(g, t, [0.06, 0.09, 0.12][accent]!, 0.001, 0.04);
     o.start(t);
     o.stop(t + 0.08);
   }
@@ -382,7 +383,7 @@ export class Voices {
         [0, 7, 5].forEach((iv, i) => this.bass(midi(36 + iv), t + i * 0.3, 0.55));
         break;
       case 'tick':
-        this.block(t, true);
+        this.block(t, 2);
         break;
       case 'sleep':
         this.note({ ...base, kind: k, len: rate * 1.2 }, t, rate);

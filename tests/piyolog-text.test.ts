@@ -125,6 +125,23 @@ describe('multiple months', () => {
     expect(parsePiyologText(bad + '\n' + full).unreadable).toBe(0);
   });
 
+  it('drops empty days at either end, as in a month exported partway through', () => {
+    const empty = (date: string) => ['----------', date, 'テスト (1か月10日)', '', 'おしっこ合計   0回', ''].join('\n');
+    const r = parsePiyologText([empty('2026/1/29(木)'), a, empty('2026/2/1(日)'), b, empty('2026/2/3(火)'), empty('2026/2/4(水)')].join('\n'));
+    expect(r.startDate).toEqual({ y: 2026, m: 1, d: 31 });
+    expect(r.dayCount).toBe(3);
+    expect(r.events.map((e) => e.day)).toEqual([0, 2]);
+  });
+
+  it('keeps a day whose only record is unreadable at the edge', () => {
+    const r = parsePiyologText(a + '\n' + day(['10:00   ミルク たくさん   '], '2026/2/3(火)'));
+    expect([r.dayCount, r.unreadable]).toEqual([4, 1]);
+  });
+
+  it('finds nothing in an export with no records', () => {
+    expect(parsePiyologText(['----------', '2026/1/29(木)', 'テスト (1か月10日)', ''].join('\n')).dayCount).toBe(0);
+  });
+
   it('handles CRLF and a BOM', () => {
     expect(parsePiyologText('﻿' + a.replace(/\n/g, '\r\n'))).toEqual(parsePiyologText(a));
   });
