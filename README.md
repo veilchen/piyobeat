@@ -33,6 +33,7 @@ CSPは本番ビルドにだけ入ります。CSPや通信に関わる確認は `
 | `src/ui/score.ts` | 譜面のcanvas描画 |
 | `scripts/check-dist.mjs` | 通信コードの混入とCSPの欠落を検出してビルドを止める |
 | `docs/SPEC.md` | 仕様 |
+| `docs/LINK-FORMAT.md` | 共有リンクの符号化（v1・v2）の解説 |
 
 ## 公開
 
